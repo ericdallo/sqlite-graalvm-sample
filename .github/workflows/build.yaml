@@ -76,7 +76,10 @@ jobs:
         uses: DeLaGuardo/setup-graalvm@master
         with:
           graalvm-version: 21.0.0.java11
-        run: gu install native-image
+
+      - name: Install native-image component
+        run: |
+          gu install native-image
 
       - name: Build Linux native image
         run: |
@@ -121,7 +124,12 @@ jobs:
         uses: DeLaGuardo/setup-graalvm@master
         with:
           graalvm-version: 21.0.0.java11
-        run: gu install native-image
+        run: |
+          gu install native-image
+
+      - name: Install native-image component
+        run: |
+          gu install native-image
 
       - name: Build MacOS native image
         run: |
