@@ -43,7 +43,7 @@ jobs:
           lein: 2.9.5
 
       - name: Generate jar and embedded jar
-        run: lein with-profiles +native-image bin
+        run: lein with-profiles +native-image uberjar
 
       - name: Get latest tag
         id: latest-tag
@@ -56,12 +56,6 @@ jobs:
         with:
           path: target/sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag}}-standalone.jar
           name: sqlite-graalvm-sample.jar
-
-      - name: Upload embedded jar
-        uses: actions/upload-artifact@v2
-        with:
-          path: target/sqlite-graalvm-sample
-          name: sqlite-graalvm-sample
 
   deploy-native-linux:
     name: Deploy native linux binary
