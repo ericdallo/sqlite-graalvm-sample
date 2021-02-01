@@ -172,6 +172,9 @@ jobs:
         run: |
           gu install native-image
 
+      - name: Display structure of downloaded files
+        run: ls -lR
+
       - name: Build Linux native image
         run: |
           export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
