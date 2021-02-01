@@ -124,6 +124,11 @@ jobs:
         with:
           name: sqlite-graalvm-sample.jar
 
+      - name: Install leiningen
+        uses: DeLaGuardo/setup-clojure@master
+        with:
+          lein: 2.9.5
+
       - name: Cache GraalVM
         uses: actions/cache@v1
         id: cache-graalvm
