@@ -83,7 +83,7 @@ jobs:
 
   #     - name: Build Linux native image
   #       run: |
-  #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+  #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
   #         export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
   #         graalvm/native-compile.sh
 
@@ -131,7 +131,7 @@ jobs:
 
   #     - name: Build MacOS native image
   #       run: |
-  #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+  #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
   #         export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
   #         graalvm/native-compile.sh
 
@@ -177,7 +177,7 @@ jobs:
 
   #     - name: Build Linux native image
   #       run: |
-  #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+  #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
   #         export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
   #         export SQLITE_GRAALVM_SAMPLE_STATIC=true
   #         graalvm/native-compile.sh
@@ -219,13 +219,9 @@ jobs:
         run: |
           gu.cmd install native-image
 
-      - name: Display structure of downloaded files
-        run: |
-          dir /s /b /o:gn
-
       - name: Build Windows native image
         run: |
-          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
           export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
           graalvm/native-compile.sh
 
