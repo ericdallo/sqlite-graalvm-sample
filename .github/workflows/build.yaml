@@ -194,3 +194,54 @@ jobs:
           file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-static-linux-amd64.zip
           asset_name: sqlite-graalvm-sample-native-static-linux-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag}}
+
+  deploy-native-windows:
+    name: Deploy native Windows binary
+    needs: build-jvm
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: sqlite-graalvm-sample.jar
+
+      - name: Install leiningen
+        uses: DeLaGuardo/setup-clojure@master
+        with:
+          lein: 2.9.5
+
+      - name: Install GraalVM
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          graalvm-version: 21.0.0.java11
+
+      - name: Install native-image component
+        run: |
+          gu.cmd install native-image
+
+      - name: Display structure of downloaded files
+        run: ls -lR
+
+      - name: Build Windows native image
+        run: |
+          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
+          graalvm/native-compile.sh
+
+      - uses: papeloto/action-zip@v1
+        with:
+          files: sqlite-graalvm-sample
+          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-windows-amd64.zip
+
+      - name: Upload native image to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-windows-amd64.zip
+          asset_name: sqlite-graalvm-sample-native-windows-amd64.zip
+          tag: ${{ steps.latest-tag.outputs.tag}}
