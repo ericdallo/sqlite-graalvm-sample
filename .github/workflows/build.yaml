@@ -220,7 +220,8 @@ jobs:
           gu.cmd install native-image
 
       - name: Display structure of downloaded files
-        run: ls -lR
+        run: |
+          dir /s /b /o:gn
 
       - name: Build Windows native image
         run: |
