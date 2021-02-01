@@ -37,4 +37,10 @@ args=("-jar" "$SQLITE_GRAALVM_SAMPLE_JAR"
       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter"
       "$SQLITE_GRAALVM_SAMPLE_XMX")
 
+SQLITE_GRAALVM_SAMPLE_STATIC=${SQLITE_GRAALVM_SAMPLE_STATIC:-}
+
+if [ "$SQLITE_GRAALVM_SAMPLE_STATIC" = "true" ]; then
+    args+=("--static")
+fi
+
 native-image "${args[@]}"
