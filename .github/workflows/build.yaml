@@ -141,12 +141,12 @@ jobs:
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java11-20.3.0 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.3.0/graalvm-ce-java11-darwin-amd64-20.3.0.tar.gz
-            tar xzf graalvm-ce-java11-darwin-amd64-20.3.0.tar.gz
+          if ! [ -d graalvm-ce-java11-21.0.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-darwin-amd64-21.0.0.tar.gz
+            tar xzf graalvm-ce-java11-darwin-amd64-21.0.0.tar.gz
           fi
 
-      - name: Build Linux native image
+      - name: Build MacOS native image
         run: |
           export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
           export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
@@ -156,12 +156,12 @@ jobs:
       - uses: papeloto/action-zip@v1
         with:
           files: sqlite-graalvm-sample
-          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-macos-amd64.zip
 
       - name: Upload native image to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-macos-amd64.zip
           asset_name: sqlite-graalvm-sample-native-macos-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag}}
