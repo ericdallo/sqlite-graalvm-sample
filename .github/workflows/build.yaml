@@ -141,16 +141,16 @@ jobs:
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java11-21.0.0 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
+          if ! [ -d graalvm-ce-java11-20.3.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.3.0/graalvm-ce-java11-darwin-amd64-20.3.0.tar.gz
+            tar xzf graalvm-ce-java11-darwin-amd64-20.3.0.tar.gz
           fi
 
       - name: Build Linux native image
         run: |
           export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
           export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.0.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.0.0/Contents/Home"
           graalvm/native-compile.sh
 
       - uses: papeloto/action-zip@v1
