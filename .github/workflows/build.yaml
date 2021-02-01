@@ -1,0 +1,168 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v
+
+jobs:
+  release:
+    if: startsWith(github.ref, 'refs/tags/2')
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.latest-tag.outputs.tag}}
+          release_name: ${{ steps.latest-tag.outputs.tag}}
+
+  build-jvm:
+    name: Build JVM jar and embedded jar
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Prepare java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Install leiningen
+        uses: DeLaGuardo/setup-clojure@master
+        with:
+          lein: 2.9.5
+
+      - name: Generate jar and embedded jar
+        run: lein with-profiles +native-image bin
+
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v2
+        with:
+          path: target/sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag}}-standalone.jar
+          name: sqlite-graalvm-sample.jar
+
+      - name: Upload embedded jar
+        uses: actions/upload-artifact@v2
+        with:
+          path: target/sqlite-graalvm-sample
+          name: sqlite-graalvm-sample
+
+  deploy-native-linux:
+    name: Deploy native linux binary
+    needs: build-jvm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: sqlite-graalvm-sample.jar
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java11-21.0.0
+          key: ${{ runner.os }}-graalvm-21.0.0
+          restore-keys: |
+                ${{ runner.os }}-graalvm-21.0.0
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java11-21.0.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
+            tar xzf graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
+          fi
+
+      - name: Build Linux native image
+        run: |
+          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.0.0"
+          graalvm/native-compile.sh
+
+      - uses: papeloto/action-zip@v1
+        with:
+          files: sqlite-graalvm-sample
+          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+
+      - name: Upload native image to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+          asset_name: sqlite-graalvm-sample-native-linux-amd64.zip
+          tag: ${{ steps.latest-tag.outputs.tag}}
+
+  deploy-native-mac:
+    name: Deploy native MacOS binary
+    needs: build-jvm
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: sqlite-graalvm-sample.jar
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java11-21.0.0
+          key: ${{ runner.os }}-graalvm-21.0.0
+          restore-keys: |
+                ${{ runner.os }}-graalvm-21.0.0
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java11-21.0.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
+            tar xzf graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
+          fi
+
+      - name: Build Linux native image
+        run: |
+          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample.jar
+          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.0.0"
+          graalvm/native-compile.sh
+
+      - uses: papeloto/action-zip@v1
+        with:
+          files: sqlite-graalvm-sample
+          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+
+      - name: Upload native image to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+          asset_name: sqlite-graalvm-sample-native-macos-amd64.zip
+          tag: ${{ steps.latest-tag.outputs.tag}}

@@ -1,4 +1,4 @@
-(defproject sqlite-graalvm-sample "0.1.0-SNAPSHOT"
+(defproject sqlite-graalvm-sample "0.1.0"
   :description "A sample to test graalvm native image with sqlite/jdbc"
   :url "http://github.com/ericdallo/sqlite-graalvm-sample"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
