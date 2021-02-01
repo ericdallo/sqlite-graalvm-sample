@@ -2,11 +2,6 @@
 
 set -e
 
-if [ -z "$GRAALVM_HOME" ]; then
-    echo "Please set GRAALVM_HOME"
-    exit 1
-fi
-
 if [[ ! -f "$SQLITE_GRAALVM_SAMPLE_JAR" ]]
 then
     lein with-profiles +native-image "do" clean, uberjar
@@ -14,8 +9,6 @@ then
 fi
 
 SQLITE_GRAALVM_SAMPLE_XMX=${SQLITE_GRAALVM_SAMPLE_XMX:-"-J-Xmx4g"}
-
-"$GRAALVM_HOME/bin/gu" install native-image
 
 args=("-jar" "$SQLITE_GRAALVM_SAMPLE_JAR"
       "-H:Name=sqlite-graalvm-sample"
@@ -44,4 +37,4 @@ args=("-jar" "$SQLITE_GRAALVM_SAMPLE_JAR"
       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter"
       "$SQLITE_GRAALVM_SAMPLE_XMX")
 
-"$GRAALVM_HOME/bin/native-image" "${args[@]}"
+native-image "${args[@]}"
