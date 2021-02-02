@@ -206,9 +206,13 @@ jobs:
         uses: WyriHaximus/github-action-get-previous-tag@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: actions/download-artifact@v2
         with:
           name: sqlite-graalvm-sample.jar
+
+      - name: Install MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install leiningen
         uses: DeLaGuardo/setup-clojure@master
