@@ -85,7 +85,7 @@ jobs:
   #       run: |
   #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
   #         export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-  #         graalvm/native-compile.sh
+  #         graalvm/native-unix-compile.sh
 
   #     - uses: papeloto/action-zip@v1
   #       with:
@@ -133,7 +133,7 @@ jobs:
   #       run: |
   #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
   #         export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-  #         graalvm/native-compile.sh
+  #         graalvm/native-unix-compile.sh
 
   #     - uses: papeloto/action-zip@v1
   #       with:
@@ -180,7 +180,7 @@ jobs:
   #         export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
   #         export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
   #         export SQLITE_GRAALVM_SAMPLE_STATIC=true
-  #         graalvm/native-compile.sh
+  #         graalvm/native-unix-compile.sh
 
   #     - uses: papeloto/action-zip@v1
   #       with:
@@ -221,19 +221,15 @@ jobs:
 
       - name: Build Windows native image
         run: |
-          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
-          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-          graalvm/native-compile.sh
+          set SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
 
-      - uses: papeloto/action-zip@v1
-        with:
-          files: sqlite-graalvm-sample
-          dest: sqlite-graalvm-sample-windows-amd64.zip
+          set SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
+          call graalvm/native-windows-compile.bat
 
       - name: Upload native image to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-windows-amd64.zip
+          file: sqlite-graalvm-sample-native-windows-amd64.zip
           asset_name: sqlite-graalvm-sample-native-windows-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag}}
