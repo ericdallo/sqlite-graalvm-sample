@@ -1,6 +1,6 @@
 @echo off
 
-dir %GRAALVM_HOME%\bin
+dir
 
 echo Building sqlite-graalvm-sample %SQLITE_GRAALVM_SAMPLE_JAR% with Xmx of %SQLITE_GRAALVM_SAMPLE_XMX%
 

@@ -221,7 +221,7 @@ jobs:
 
       - name: Build Windows native image
         env:
-          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample.jar
           SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
           .\graalvm\native-windows-compile.bat
