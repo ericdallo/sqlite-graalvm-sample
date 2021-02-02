@@ -21,7 +21,8 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-echo Creating zip archive
-dir
+rem graalvm ignores Name for some reason and use rem as the binary name
 ren "rem.exe" "sqlite-graalvm-sample.exe"
+
+echo Creating zip archive
 jar -cMf sqlite-graalvm-sample-native-windows-amd64.zip sqlite-graalvm-sample.exe
