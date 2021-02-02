@@ -224,7 +224,7 @@ jobs:
           set SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
 
           set SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-          call graalvm/native-windows-compile.bat
+          .\graalvm\native-windows-compile.bat
 
       - name: Upload native image to release
         uses: svenstaro/upload-release-action@v2
