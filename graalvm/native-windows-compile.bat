@@ -12,7 +12,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
       "-H:+InlineBeforeAnalysis" ^
       "-H:Log=registerResource:" ^
       "--verbose" ^
-      rem "-H:IncludeResources='db/.*|static/.*|templates/.*|.*.yml|.*.xml|.*/org/sqlite/.*|org/sqlite/.*|.*.properties'" ^
+      "-H:IncludeResources=db/.*|static/.*|templates/.*|.*.yml|.*.xml|.*/org/sqlite/.*|org/sqlite/.*|.*.properties" ^
       "--initialize-at-build-time" ^
       "--report-unsupported-elements-at-runtime" ^
       "--no-fallback" ^
