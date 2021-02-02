@@ -23,4 +23,5 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo Creating zip archive
 dir
+ren "rem.exe" "sqlite-graalvm-sample.exe"
 jar -cMf sqlite-graalvm-sample-native-windows-amd64.zip sqlite-graalvm-sample.exe
