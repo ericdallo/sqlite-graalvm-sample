@@ -201,6 +201,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v2
         with:
           name: sqlite-graalvm-sample.jar
@@ -221,7 +226,7 @@ jobs:
 
       - name: Build Windows native image
         env:
-          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample.jar
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
           SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
           .\graalvm\native-windows-compile.bat
