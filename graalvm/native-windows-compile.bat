@@ -30,7 +30,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider" ^
       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader" ^
       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter" ^
-      "%SQLITE_GRAALVM_SAMPLE_XMX%")
+      "%SQLITE_GRAALVM_SAMPLE_XMX%"
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
