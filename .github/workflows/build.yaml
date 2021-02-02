@@ -220,10 +220,10 @@ jobs:
           gu.cmd install native-image
 
       - name: Build Windows native image
+        env:
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
+          SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
-          set SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
-
-          set SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
           .\graalvm\native-windows-compile.bat
 
       - name: Upload native image to release
