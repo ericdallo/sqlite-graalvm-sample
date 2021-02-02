@@ -22,4 +22,5 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo Creating zip archive
+dir
 jar -cMf sqlite-graalvm-sample-native-windows-amd64.zip sqlite-graalvm-sample.exe
