@@ -129,6 +129,11 @@ jobs:
         run: |
           gu install native-image
 
+      - name: Install Babashka
+        run: |
+          curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install | sudo bash
+          bb --help
+
       - name: Build MacOS native image
         run: |
           export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
@@ -171,6 +176,11 @@ jobs:
       - name: Install native-image component
         run: |
           gu install native-image
+
+      - name: Install Babashka
+        run: |
+          curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install | sudo bash
+          bb --help
 
       - name: Display structure of downloaded files
         run: ls -lR
@@ -227,6 +237,15 @@ jobs:
       - name: Install native-image component
         run: |
           gu.cmd install native-image
+
+      - name: Install Babashka
+        run: |
+          iwr -useb get.scoop.sh | iex
+          scoop bucket add scoop-clojure https://github.com/littleli/scoop-clojure
+          scoop bucket add extras
+          scoop install babashka --independent
+          echo "$HOME\scoop\shims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          bb --help
 
       - name: Build Windows native image
         env:
