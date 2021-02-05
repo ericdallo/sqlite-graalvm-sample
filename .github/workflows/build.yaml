@@ -69,10 +69,13 @@ jobs:
         run: |
           graalvm/native-unix-compile.sh
 
+      - name: Zip binary
+        run: zip sqlite-graalvm-sample-native-linux-amd64.zip sqlite-graalvm-sample
+
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          path: sqlite-graalvm-sample
+          path: sqlite-graalvm-sample-native-linux-amd64.zip
           name: sqlite-graalvm-sample-native-linux-amd64.zip
 
   native-static-linux:
@@ -107,10 +110,13 @@ jobs:
         run: |
           graalvm/native-unix-compile.sh
 
+      - name: Zip binary
+        run: zip sqlite-graalvm-sample-native-static-linux-amd64.zip sqlite-graalvm-sample
+
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          path: sqlite-graalvm-sample
+          path: sqlite-graalvm-sample-native-static-linux-amd64.zip
           name: sqlite-graalvm-sample-native-static-linux-amd64.zip
 
   native-macos:
@@ -144,10 +150,13 @@ jobs:
         run: |
           graalvm/native-unix-compile.sh
 
+      - name: Zip binary
+        run: zip sqlite-graalvm-sample-native-macos-amd64.zip sqlite-graalvm-sample
+
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          path: sqlite-graalvm-sample
+          path: sqlite-graalvm-sample-native-macos-amd64.zip
           name: sqlite-graalvm-sample-native-macos-amd64.zip
 
   native-windows:
@@ -187,7 +196,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          path: sqlite-graalvm-sample.exe
+          path: sqlite-graalvm-sample-native-windows-amd64.zip
           name: sqlite-graalvm-sample-native-windows-amd64.zip
 
   release:
@@ -228,7 +237,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample.jar
+          file: sqlite-graalvm-sample.jar/sqlite-graalvm-sample.jar
           asset_name: sqlite-graalvm-sample.jar
           tag: ${{ steps.latest-tag.outputs.tag}}
 
@@ -236,7 +245,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-native-linux-amd64.zip
+          file: sqlite-graalvm-sample-native-linux-amd64.zip/sqlite-graalvm-sample-native-linux-amd64.zip
           asset_name: sqlite-graalvm-sample-native-linux-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag }}
 
@@ -244,7 +253,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-native-static-linux-amd64.zip
+          file: sqlite-graalvm-sample-native-static-linux-amd64.zip/sqlite-graalvm-sample-native-static-linux-amd64.zip
           asset_name: sqlite-graalvm-sample-native-static-linux-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag }}
 
@@ -252,7 +261,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-native-macos-amd64.zip
+          file: sqlite-graalvm-sample-native-macos-amd64.zip/sqlite-graalvm-sample-native-macos-amd64.zip
           asset_name: sqlite-graalvm-sample-native-macos-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag}}
 
@@ -260,6 +269,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-native-windows-amd64.zip
+          file: sqlite-graalvm-sample-native-windows-amd64.zip/sqlite-graalvm-sample-native-windows-amd64.zip
           asset_name: sqlite-graalvm-sample-native-windows-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag}}
