@@ -229,14 +229,6 @@ jobs:
           asset_name: sqlite-graalvm-sample.jar
           tag: ${{ steps.latest-tag.outputs.tag}}
 
-      - name: Upload JVM unix embbeded jar
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample/sqlite-graalvm-sample
-          asset_name: sqlite-graalvm-sample
-          tag: ${{ steps.latest-tag.outputs.tag}}
-
       - name: Upload JVM Windows embedded jar
         uses: svenstaro/upload-release-action@v2
         with:
