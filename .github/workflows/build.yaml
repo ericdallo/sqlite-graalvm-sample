@@ -6,71 +6,52 @@ on:
       - v*
 
 jobs:
-  release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    name: Create Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Get latest tag
-        id: latest-tag
-        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.latest-tag.outputs.tag}}
-          release_name: ${{ steps.latest-tag.outputs.tag}}
-
   build-jvm:
+    if: startsWith(github.ref, 'refs/tags/v')
     name: Build JVM jar and embedded jar
-    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - name: Prepare java
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
 
-      - name: Install leiningen
+      - name: Install Leiningen
         uses: DeLaGuardo/setup-clojure@master
         with:
-          lein: 2.9.5
+          lein: 2.9.1
 
       - name: Generate jar and embedded jar
-        run: lein with-profiles +native-image uberjar
+        run: lein with-profile native-image uberjar
 
       - name: Get latest tag
         id: latest-tag
-        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Rename jar
+        run: mv target/sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag}}-standalone.jar sqlite-graalvm-sample.jar
 
       - name: Upload jar
         uses: actions/upload-artifact@v2
         with:
-          path: target/sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag}}-standalone.jar
+          path: sqlite-graalvm-sample.jar
           name: sqlite-graalvm-sample.jar
 
-  deploy-native-linux:
-    name: Deploy native linux binary
+  native-linux:
+    name: Build native linux binary
     needs: build-jvm
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Get latest tag
-        id: latest-tag
-        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v2
         with:
           name: sqlite-graalvm-sample.jar
+
+      - name: Install Leiningen
+        uses: DeLaGuardo/setup-clojure@master
+        with:
+          lein: 2.9.1
 
       - name: Install GraalVM
         uses: DeLaGuardo/setup-graalvm@master
@@ -82,43 +63,70 @@ jobs:
           gu install native-image
 
       - name: Build Linux native image
+        env:
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample.jar
+          SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
-          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
-          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
           graalvm/native-unix-compile.sh
 
-      - uses: papeloto/action-zip@v1
+      - name: Upload
+        uses: actions/upload-artifact@v2
         with:
-          files: sqlite-graalvm-sample
-          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
+          path: sqlite-graalvm-sample
+          name: sqlite-graalvm-sample-native-linux-amd64.zip
 
-      - name: Upload native image to release
-        uses: svenstaro/upload-release-action@v2
+  native-static-linux:
+    name: Build native static linux binary
+    needs: build-jvm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-linux-amd64.zip
-          asset_name: sqlite-graalvm-sample-native-linux-amd64.zip
-          tag: ${{ steps.latest-tag.outputs.tag}}
+          name: sqlite-graalvm-sample.jar
 
-  deploy-native-mac:
-    name: Deploy native MacOS binary
+      - name: Install Leiningen
+        uses: DeLaGuardo/setup-clojure@master
+        with:
+          lein: 2.9.1
+
+      - name: Install GraalVM
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          graalvm-version: 21.0.0.java11
+
+      - name: Install native-image component
+        run: |
+          gu install native-image
+
+      - name: Build static Linux native image
+        env:
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample.jar
+          SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
+          SQLITE_GRAALVM_SAMPLE_STATIC: true
+        run: |
+          graalvm/native-unix-compile.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: sqlite-graalvm-sample
+          name: sqlite-graalvm-sample-native-static-linux-amd64.zip
+
+  native-macos:
+    name: Build native MacOS binary
     needs: build-jvm
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Get latest tag
-        id: latest-tag
-        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v2
         with:
           name: sqlite-graalvm-sample.jar
 
-      - name: Install leiningen
+      - name: Install Leiningen
         uses: DeLaGuardo/setup-clojure@master
         with:
-          lein: 2.9.5
+          lein: 2.9.1
 
       - name: Install GraalVM
         uses: DeLaGuardo/setup-graalvm@master
@@ -128,106 +136,37 @@ jobs:
       - name: Install native-image component
         run: |
           gu install native-image
-
-      - name: Install Babashka
-        run: |
-          curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install | sudo bash
-          bb --help
 
       - name: Build MacOS native image
-        run: |
-          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
-          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-          graalvm/native-unix-compile.sh
-
-      - uses: papeloto/action-zip@v1
-        with:
-          files: sqlite-graalvm-sample
-          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-macos-amd64.zip
-
-      - name: Upload native image to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-macos-amd64.zip
-          asset_name: sqlite-graalvm-sample-native-macos-amd64.zip
-          tag: ${{ steps.latest-tag.outputs.tag}}
-
-  deploy-native-static-linux:
-    name: Deploy native static linux binary
-    needs: build-jvm
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Get latest tag
-        id: latest-tag
-        uses: WyriHaximus/github-action-get-previous-tag@0.1.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/download-artifact@v2
-        with:
-          name: sqlite-graalvm-sample.jar
-
-      - name: Install GraalVM
-        uses: DeLaGuardo/setup-graalvm@master
-        with:
-          graalvm-version: 21.0.0.java11
-
-      - name: Install native-image component
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample.jar
+          SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
-          gu install native-image
-
-      - name: Install Babashka
-        run: |
-          curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install | sudo bash
-          bb --help
-
-      - name: Display structure of downloaded files
-        run: ls -lR
-
-      - name: Build Linux native image
-        run: |
-          export SQLITE_GRAALVM_SAMPLE_JAR=sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
-          export SQLITE_GRAALVM_SAMPLE_XMX="-J-Xmx6g"
-          export SQLITE_GRAALVM_SAMPLE_STATIC=true
           graalvm/native-unix-compile.sh
 
-      - uses: papeloto/action-zip@v1
+      - name: Upload
+        uses: actions/upload-artifact@v2
         with:
-          files: sqlite-graalvm-sample
-          dest: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-static-linux-amd64.zip
+          path: sqlite-graalvm-sample
+          name: sqlite-graalvm-sample-native-macos-amd64.zip
 
-      - name: Upload native image to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-static-linux-amd64.zip
-          asset_name: sqlite-graalvm-sample-native-static-linux-amd64.zip
-          tag: ${{ steps.latest-tag.outputs.tag}}
-
-  deploy-native-windows:
-    name: Deploy native Windows binary
+  native-windows:
+    name: Build native Windows binary
     needs: build-jvm
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Get latest tag
-        id: latest-tag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: actions/download-artifact@v2
         with:
           name: sqlite-graalvm-sample.jar
 
-      - name: Install MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install leiningen
+      - name: Install Leiningen
         uses: DeLaGuardo/setup-clojure@master
         with:
-          lein: 2.9.5
+          lein: 2.9.1
+
+      - name: Install MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install GraalVM
         uses: DeLaGuardo/setup-graalvm@master
@@ -238,25 +177,102 @@ jobs:
         run: |
           gu.cmd install native-image
 
-      - name: Install Babashka
-        run: |
-          iwr -useb get.scoop.sh | iex
-          scoop bucket add scoop-clojure https://github.com/littleli/scoop-clojure
-          scoop bucket add extras
-          scoop install babashka --independent
-          echo "$HOME\scoop\shims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
       - name: Build Windows native image
         env:
-          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample-${{ steps.latest-tag.outputs.tag }}-standalone.jar
+          SQLITE_GRAALVM_SAMPLE_JAR: sqlite-graalvm-sample.jar
           SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
           .\graalvm\native-windows-compile.bat
 
-      - name: Upload native image to release
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: sqlite-graalvm-sample.exe
+          name: sqlite-graalvm-sample-native-windows-amd64.zip
+
+  release:
+    name: Create Release
+    needs: [build-jvm, native-linux, native-macos, native-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.latest-tag.outputs.tag}}
+          release_name: ${{ steps.latest-tag.outputs.tag}}
+
+  upload-to-release:
+    name: Upload artifacts to release
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - uses: actions/download-artifact@v2
+
+      - name: Upload JVM
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sqlite-graalvm-sample-native-windows-amd64.zip
+          file: sqlite-graalvm-sample.jar/sqlite-graalvm-sample.jar
+          asset_name: sqlite-graalvm-sample.jar
+          tag: ${{ steps.latest-tag.outputs.tag}}
+
+      - name: Upload JVM unix embbeded jar
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample/sqlite-graalvm-sample
+          asset_name: sqlite-graalvm-sample
+          tag: ${{ steps.latest-tag.outputs.tag}}
+
+      - name: Upload JVM Windows embedded jar
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample/sqlite-graalvm-sample
+          asset_name: sqlite-graalvm-sample.bat
+          tag: ${{ steps.latest-tag.outputs.tag}}
+
+      - name: Upload Linux native binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-native-linux-amd64.zip/sqlite-graalvm-sample-native-linux-amd64.zip
+          asset_name: sqlite-graalvm-sample-native-linux-amd64.zip
+          tag: ${{ steps.latest-tag.outputs.tag }}
+
+      - name: Upload static Linux native binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-native-static-linux-amd64.zip/sqlite-graalvm-sample-native-static-linux-amd64.zip
+          asset_name: sqlite-graalvm-sample-native-static-linux-amd64.zip
+          tag: ${{ steps.latest-tag.outputs.tag }}
+
+      - name: Upload MacOS native binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-native-macos-amd64.zip/sqlite-graalvm-sample-native-macos-amd64.zip
+          asset_name: sqlite-graalvm-sample-native-macos-amd64.zip
+          tag: ${{ steps.latest-tag.outputs.tag}}
+
+      - name: Upload Windows native binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sqlite-graalvm-sample-native-windows-amd64.zip/sqlite-graalvm-sample-native-windows-amd64.zip
           asset_name: sqlite-graalvm-sample-native-windows-amd64.zip
           tag: ${{ steps.latest-tag.outputs.tag}}
