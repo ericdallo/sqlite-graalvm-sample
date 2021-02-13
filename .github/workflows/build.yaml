@@ -115,6 +115,11 @@ jobs:
         run: |
           graalvm/native-unix-compile.sh
 
+      - name: Compress binary
+        uses: svenstaro/upx-action@v2
+        with:
+          file: sqlite-graalvm-sample
+
       - name: Zip binary
         run: zip sqlite-graalvm-sample-native-static-linux-amd64.zip sqlite-graalvm-sample
 
@@ -154,6 +159,11 @@ jobs:
           SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
           graalvm/native-unix-compile.sh
+
+      - name: Compress binary
+        uses: svenstaro/upx-action@v2
+        with:
+          file: sqlite-graalvm-sample
 
       - name: Zip binary
         run: zip sqlite-graalvm-sample-native-macos-amd64.zip sqlite-graalvm-sample
@@ -197,6 +207,15 @@ jobs:
           SQLITE_GRAALVM_SAMPLE_XMX: "-J-Xmx6g"
         run: |
           .\graalvm\native-windows-compile.bat
+
+      - name: Compress binary
+        uses: svenstaro/upx-action@v2
+        with:
+          file: sqlite-graalvm-sample.exe
+
+      - name: Zip binary
+        run: |
+          jar -cMf sqlite-graalvm-sample-native-windows-amd64.zip sqlite-graalvm-sample.exe
 
       - name: Upload
         uses: actions/upload-artifact@v2

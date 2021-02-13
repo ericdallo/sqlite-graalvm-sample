@@ -23,6 +23,3 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 rem graalvm ignores Name for some reason and use rem as the binary name
 ren "rem.exe" "sqlite-graalvm-sample.exe"
-
-rem echo Creating zip archive
-jar -cMf sqlite-graalvm-sample-native-windows-amd64.zip sqlite-graalvm-sample.exe
