@@ -69,6 +69,11 @@ jobs:
         run: |
           graalvm/native-unix-compile.sh
 
+      - name: Compress binary
+        uses: svenstaro/upx-action@v2
+        with:
+          file: sqlite-graalvm-sample
+
       - name: Zip binary
         run: zip sqlite-graalvm-sample-native-linux-amd64.zip sqlite-graalvm-sample
 
