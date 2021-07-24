@@ -9,7 +9,7 @@ fi
 
 if [[ ! -f "$SQLITE_GRAALVM_SAMPLE_JAR" ]]
 then
-    lein with-profiles +native-image "do" clean, uberjar
+    lein "do" clean, uberjar
     SQLITE_GRAALVM_SAMPLE_JAR=$(ls target/sqlite-graalvm-sample-*-standalone.jar)
 fi
 
